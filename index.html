@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>画質で逆転！？じゃんけんアプリ（試作）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>画質で逆転！？じゃんけんアプリ</h1>
+    <p class="lead">
+      自分のイラスト画像をアップロードして、PCがランダムに出すグーチョキパー画像と勝負します。<br>
+      画質が良ければ、じゃんけんで負けても逆転できるかも…？
+    </p>
+
+    <!-- 画像アップロード -->
+    <section class="upload-area">
+      <h2>1. あなたのイラスト画像をアップロード</h2>
+      <button class="btn primary" id="upload-btn">画像を選択</button>
+      <input type="file" id="user-file" accept="image/*" hidden />
+      <p class="hint">※毎回出したい手のイラスト画像を1枚選んでください。</p>
+      <div class="preview-wrapper">
+        <div class="preview-frame">
+          <span id="user-placeholder" class="placeholder">
+            まだ画像が選択されていません。
+          </span>
+          <img id="user-preview" alt="あなたの画像プレビュー">
+        </div>
+      </div>
+    </section>
+
+    <!-- 手を選んで勝負 -->
+    <section class="play-area">
+      <h2>2. 出す手を選んで勝負！</h2>
+      <div class="choices">
+        <button class="btn hand" data-hand="グー">✊ グー</button>
+        <button class="btn hand" data-hand="チョキ">✌ チョキ</button>
+        <button class="btn hand" data-hand="パー">🖐 パー</button>
+      </div>
+      <p class="hint">※画像をアップしてからボタンを押してください。</p>
+    </section>
+
+    <!-- 対戦結果表示 -->
+    <section class="battle-area">
+      <div class="panel">
+        <h3>あなた</h3>
+        <p class="hand-label" id="user-hand-label">手：--</p>
+        <div class="preview-frame small">
+          <img id="user-battle-preview" alt="対戦用あなた画像">
+        </div>
+        <p class="score" id="user-score">スコア：--</p>
+        <ul class="details-list" id="user-details"></ul>
+      </div>
+
+      <div class="panel">
+        <h3>PC</h3>
+        <p class="hand-label" id="npc-hand-label">手：--</p>
+        <div class="preview-frame small">
+          <img id="npc-preview" alt="PC画像">
+        </div>
+        <p class="score" id="npc-score">スコア：--</p>
+        <ul class="details-list" id="npc-details"></ul>
+      </div>
+    </section>
+
+    <section class="result-area">
+      <p class="base-result" id="base-result">じゃんけん結果：--</p>
+      <p class="final-result" id="final-result">最終結果：--</p>
+      <p class="explain" id="explain-text"></p>
+    </section>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
