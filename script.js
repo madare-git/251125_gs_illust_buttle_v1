@@ -1,19 +1,55 @@
-// PC側のグーチョキパー画像（自分のファイル名に合わせて書き換えてOK）
+// PC側のグーチョキパー画像（今時点では固定の3枚の画像）
 const npcHands = [
   { hand: "グー", src: "npc-images/gu.png" },
   { hand: "チョキ", src: "npc-images/choki.png" },
   { hand: "パー", src: "npc-images/pa.png" },
 ];
 
+// ★ ユーザー画像を保存する localStorage のキー
+const STORAGE_KEYS = {
+  グー: "userImage_gu",
+  チョキ: "userImage_choki",
+  パー: "userImage_pa",
+};
+
 document.addEventListener("DOMContentLoaded", () => {
-  const uploadBtn = document.getElementById("upload-btn");
-  const userFileInput = document.getElementById("user-file");
-  const userPreview = document.getElementById("user-preview");
-  const userPlaceholder = document.getElementById("user-placeholder");
-  const userBattlePreview = document.getElementById("user-battle-preview");
-  const npcPreview = document.getElementById("npc-preview");
+  // === DOM要素取得 ===
+  const btnUploadGu = document.getElementById("btn-upload-gu");
+  const btnUploadChoki = document.getElementById("btn-upload-choki");
+  const btnUploadPa = document.getElementById("btn-upload-pa");
+
+  const fileGu = document.getElementById("file-gu");
+  const fileChoki = document.getElementById("file-choki");
+  const filePa = document.getElementById("file-pa");
+
+  const previewGu = document.getElementById("preview-gu");
+  const previewChoki = document.getElementById("preview-choki");
+  const previewPa = document.getElementById("preview-pa");
+
+  const phGu = document.getElementById("ph-gu");
+  const phChoki = document.getElementById("ph-choki");
+  const phPa = document.getElementById("ph-pa");
+
+    // ★ 手ごとのプレビュー/プレースホルダーをマップで扱えるようにする
+  const previewMap = {
+    グー: previewGu,
+    チョキ: previewChoki,
+    パー: previewPa,
+  };
+
+  const placeholderMap = {
+    グー: phGu,
+    チョキ: phChoki,
+    パー: phPa,
+  };
+
+  const readyIndicator = document.getElementById("ready-indicator");
+  const handButtons = document.querySelectorAll(".btn-hand");
+
   const userHandLabel = document.getElementById("user-hand-label");
   const npcHandLabel = document.getElementById("npc-hand-label");
+  const userBattlePreview = document.getElementById("user-battle-preview");
+  const npcPreview = document.getElementById("npc-preview");
   const userScoreEl = document.getElementById("user-score");
   const npcScoreEl = document.getElementById("npc-score");
   const userDetailsEl = document.getElementById("user-details");
@@ -22,123 +58,186 @@ document.addEventListener("DOMContentLoaded", () => {
   const finalResultEl = document.getElementById("final-result");
   const explainEl = document.getElementById("explain-text");
 
-  const handButtons = document.querySelectorAll(".btn.hand");
+  // === ユーザーがセットした3枚の画像(DataURL)を保持するオブジェクト ===
+  const userImages = {
+    グー: null,
+    チョキ: null,
+    パー: null,
+  };
 
-  let currentUserImageDataUrl = null; // ユーザーがアップした画像のDataURL
+  // ★ ⭐️ページ読み込み時に localStorage から画像を復元
+  function loadImagesFromStorage() {
+    ["グー", "チョキ", "パー"].forEach((handKey) => {
+      const storageKey = STORAGE_KEYS[handKey];
+      const dataUrl = localStorage.getItem(storageKey);
+      if (!dataUrl) return; // 保存がなければスキップ
 
-  // アップロードボタン → inputクリック
-  uploadBtn.addEventListener("click", () => {
-    userFileInput.click();
-  });
+      // Local Storageの画像をuserImages にセット
+      userImages[handKey] = dataUrl;
 
-  // 画像ファイル選択時
-  userFileInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+      // プレビュー表示
+      const previewEl = previewMap[handKey];
+      const placeholderEl = placeholderMap[handKey];
+      previewEl.src = dataUrl;
+      previewEl.style.display = "block";
+      if (placeholderEl) placeholderEl.style.display = "none";
+    });
 
-    if (!file.type.startsWith("image/")) {
+    // セット状況に応じてボタン有効化/メッセージ更新
+    checkReady();
+  }
+
+  // --- アップロードボタンからinputを開く ---
+  btnUploadGu.addEventListener("click", () => fileGu.click());
+  btnUploadChoki.addEventListener("click", () => fileChoki.click());
+  btnUploadPa.addEventListener("click", () => filePa.click());
+
+  // 各手ごとのファイル選択処理（この部分が汎用化のための重要な処理）
+  // handleUpload (対象の手, どの <input type="file"> からファイルを取ればいいか, どの <img> にプレビューを表示するか, その後削除するプレースホルダー要素)
+  fileGu.addEventListener("change", () => handleUpload("グー", fileGu, previewGu, phGu));
+  fileChoki.addEventListener("change", () =>
+    handleUpload("チョキ", fileChoki, previewChoki, phChoki)
+  );
+  filePa.addEventListener("change", () => handleUpload("パー", filePa, previewPa, phPa));
+
+  // 汎用処理（アップロード、ローカルファイルへの保存、プレビュー表示更新、状態更新）
+  // 汎用アップロード処理
+  function handleUpload(handKey, inputEl, previewEl, placeholderEl) {
+    const file = inputEl.files[0];
+    if (!file) return; // キャンセルされた場合
+    if (!file.type.startsWith("image/")) { // 画像ファイル以外の場合
       alert("画像ファイルを選択してください。");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      currentUserImageDataUrl = event.target.result;
-      userPreview.src = currentUserImageDataUrl;
-      userPreview.style.display = "block";
-      userPlaceholder.style.display = "none";
+    const reader = new FileReader(); // ローカルファイルをDataURLとして読み込む
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      // (e)の意味は不明だけども、ファイルをアップロードするときおおまじない
+
+      // メモリ上の状態を更新
+      userImages[handKey] = dataUrl;
+
+      // ★ ⭐️User　Imagesに選択した画像を保存
+      const storageKey = STORAGE_KEYS[handKey];
+      // ★ ⭐️localStorage に保存
+      localStorage.setItem(storageKey, dataUrl);
+
+      // プレビュー表示更新
+      previewEl.src = dataUrl;
+      previewEl.style.display = "block";
+      placeholderEl.style.display = "none";
+
+      checkReady();
+      resetResult();
     };
     reader.readAsDataURL(file);
-  });
+  }
 
-  // グーチョキパーのボタンが押されたとき
+  // 3枚揃ったら準備OK & じゃんけんボタンを有効化
+  function checkReady() {
+    const allSet = Object.values(userImages).every((v) => Boolean(v)); 
+    // Boolean(v) は null/undefined/空文字を false に変換、何かしらの文字が入っていると true に変換
+    // allSet は3枚すべて画像がセットされているかどうかの真偽値(3枚すべてなら true, 1枚でも欠けていれば false)
+    if (allSet) {
+      readyIndicator.textContent = "準備OK！お好きな手でPCと勝負してみましょう。";
+      handButtons.forEach((btn) => (btn.disabled = false)); // じゃんけんボタンを有効化
+    } else {
+      const remain = Object.values(userImages).filter((v) => !v).length;
+      // .filter((v) => !v) は「まだ null のものだけを集めた配列」を返してくれる。なぜなら!v は null/undefined/空文字を false に変換されるから。
+      // .lengthはその配列の要素数、つまり「まだセットされていない画像の枚数」を返す
+      // 結果、remain はまだセットされていない画像の枚数
+      readyIndicator.textContent = `準備中：あと ${remain} 枚画像をセットしてください。`;
+      handButtons.forEach((btn) => (btn.disabled = true)); // じゃんけんボタンを無効化
+    }
+  }
+
+  // じゃんけんボタンのクリック
   handButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const hand = btn.dataset.hand; // "グー" / "チョキ" / "パー"
-
-      if (!currentUserImageDataUrl) {
-        alert("先にあなたのイラスト画像をアップロードしてください。");
+      const imgUrl = userImages[hand];
+      if (!imgUrl) {
+        alert("この手の画像がまだセットされていません。");
         return;
       }
-
-      playRound(hand);
+      playRound(hand, imgUrl);
     });
   });
 
   // 1ラウンド実行
-  async function playRound(userHand) {
+  async function playRound(userHand, userImgUrl) {
     resetResult();
 
-    // ユーザー側表示更新
+    // あなた側表示
     userHandLabel.textContent = `手：${userHand}`;
-    userBattlePreview.src = currentUserImageDataUrl;
+    userBattlePreview.src = userImgUrl;
 
     // PCの手をランダム選択
     const npc = npcHands[Math.floor(Math.random() * npcHands.length)];
     npcHandLabel.textContent = `手：${npc.hand}`;
     npcPreview.src = npc.src;
 
-    // 画質スコア評価
+    // 画質評価
     const [userEval, npcEval] = await Promise.all([
-      evaluateImage(currentUserImageDataUrl),
+      evaluateImage(userImgUrl),
       evaluateImage(npc.src),
     ]);
 
     renderDetails(userScoreEl, userDetailsEl, userEval);
     renderDetails(npcScoreEl, npcDetailsEl, npcEval);
 
-    // じゃんけん本来の結果
+    // 素のじゃんけん結果
     const base = judgeJanken(userHand, npc.hand);
     const baseText =
       base === 1 ? "あなたの勝ち"
       : base === -1 ? "あなたの負け"
       : "あいこ";
-
     baseResultEl.textContent = `じゃんけん結果：${baseText}`;
 
-    // 画質による逆転ルール
+    // 画質による逆転ロジック
     const diff = userEval.score - npcEval.score;
     let final = base;
     let explain = "";
 
     if (base === -1) {
+      // 本来負け
       if (diff >= 20) {
-        // 負け → 大逆転勝ち
         final = 1;
-        explain = `本来は負けでしたが、あなたの画像スコアがPCより${diff}点高いため、大逆転勝ちです！`;
+        explain = `本来は負けでしたが、あなたの画像スコアがPCより${diff}点高く、大逆転勝ちです！`;
       } else if (diff >= 10) {
-        // 負け → 引き分け
         final = 0;
-        explain = `本来は負けでしたが、あなたの画像スコアがPCより${diff}点高いため、引き分けになりました。`;
+        explain = `本来は負けでしたが、画像スコアがPCより${diff}点高く、引き分け扱いになりました。`;
       } else {
-        explain = "本来のじゃんけん結果が優先されました。画質では逆転ならず…。";
+        explain = "画質の差では逆転できませんでした。次の一枚に期待…！";
       }
     } else if (base === 1) {
+      // 本来勝ち
       if (diff <= -20) {
-        // 勝ち → 大逆転負け（PCの圧倒的画質）
         final = -1;
-        explain = `じゃんけんには勝ちましたが、PCの画像スコアが${-diff}点も高く、画質で押し切られてしまいました…。`;
+        explain = `じゃんけんには勝ちましたが、PCの画像スコアが${-diff}点高く、画質で押し切られてしまいました…。`;
       } else if (diff <= -10) {
-        // 勝ち → 引き分け
         final = 0;
-        explain = `じゃんけんには勝ちましたが、PCの画像スコアが高かったため、引き分け扱いになりました。`;
+        explain = `じゃんけんには勝ったものの、PCの画像スコアが高かったため、引き分け扱いになりました。`;
       } else {
-        explain = "じゃんけんも画質も十分！文句なしの勝利です。";
+        explain = "じゃんけんも画質もあなたの勝ち！文句なしの勝利です。";
       }
     } else {
-      // あいこの場合
+      // あいこ
       if (diff >= 10) {
         final = 1;
-        explain = `じゃんけんはあいこでしたが、画像スコアの差（+${diff}点）で、あなたの勝ちになりました！`;
+        explain = `じゃんけんはあいこでしたが、画像スコアの差（+${diff}点）であなたの勝ちになりました！`;
       } else if (diff <= -10) {
         final = -1;
         explain = `じゃんけんはあいこでしたが、PCの画像スコアの方が高く、PCの勝ちになりました。`;
       } else {
-        explain = "じゃんけんも画質も互角でした。ナイスファイト！";
+        explain = "じゃんけんも画質も互角でした。いい勝負！";
       }
     }
 
-    let finalText, finalClass;
+    // 最終結果表示
+    let finalText;
+    let finalClass;
     if (final === 1) {
       finalText = "最終結果：あなたの勝ち！🎉";
       finalClass = "win";
@@ -155,7 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
     explainEl.textContent = explain;
   }
 
-  // 画質スコア評価（解像度＋縦横比）
+  // 画像の画質スコア評価（解像度＋縦横比）
   function evaluateImage(url) {
     return new Promise((resolve) => {
       const img = new Image();
@@ -193,13 +292,12 @@ document.addEventListener("DOMContentLoaded", () => {
           score += 5;
           details.push("標準的な縦横比で、扱いやすい画像です。");
         } else if (ratio < 2.5) {
-          details.push("やや細長い縦横比です。場合によってはトリミングも検討できます。");
+          details.push("やや細長い縦横比です。用途によってはトリミングも検討できます。");
         } else {
           score -= 5;
           details.push("かなり細長い比率で、用途が限られるかもしれません。");
         }
 
-        // スコア範囲調整
         score = Math.max(0, Math.min(100, score));
         resolve({
           score: Math.round(score),
@@ -213,7 +311,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // じゃんけん判定：ユーザー視点で 1=勝ち, 0=あいこ, -1=負け
   function judgeJanken(userHand, npcHand) {
     if (userHand === npcHand) return 0;
-
     if (
       (userHand === "グー" && npcHand === "チョキ") ||
       (userHand === "チョキ" && npcHand === "パー") ||
@@ -235,13 +332,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function resetResult() {
+    baseResultEl.textContent = "じゃんけん結果：--";
     finalResultEl.textContent = "最終結果：--";
     finalResultEl.classList.remove("win", "lose", "draw");
-    baseResultEl.textContent = "じゃんけん結果：--";
     explainEl.textContent = "";
     userScoreEl.textContent = "スコア：--";
     npcScoreEl.textContent = "スコア：--";
     userDetailsEl.innerHTML = "";
     npcDetailsEl.innerHTML = "";
   }
+
+   // ★ 最後に既存データを読み込む
+  loadImagesFromStorage();
+
 });

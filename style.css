@@ -1,107 +1,156 @@
+/* 全体の背景にグラデーション */
 body {
+  margin: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
-  background: #f3f4f6;
-  margin: 0;
+  color: #0f172a;
+  background: radial-gradient(circle at top, #1d4ed8 0, #020617 55%);
+  min-height: 100vh;
+}
+
+.bg-gradient {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.3), transparent 55%),
+    radial-gradient(circle at 100% 0%, rgba(236, 72, 153, 0.3), transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* メインカード */
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 1000px;
+  margin: 24px auto 40px;
   padding: 20px;
-  color: #111827;
 }
 
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  background: #ffffff;
-  padding: 20px 20px 32px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
-}
-
-h1 {
-  margin-top: 0;
+/* ヘッダー */
+.app-header {
   text-align: center;
+  margin-bottom: 20px;
 }
 
-.lead {
-  text-align: center;
-  font-size: 0.95rem;
-  color: #4b5563;
-  margin-bottom: 24px;
+.app-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #f9fafb;
 }
 
-section + section {
-  margin-top: 24px;
-}
-
-.upload-area h2,
-.play-area h2 {
-  margin-bottom: 8px;
-}
-
-.hint {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-.btn {
-  border: none;
-  border-radius: 999px;
-  padding: 10px 20px;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: 0.15s;
-}
-
-.btn.primary {
-  background: #2563eb;
-  color: #ffffff;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.4);
-}
-
-.btn.primary:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-}
-
-.choices {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.subtitle {
   margin-top: 8px;
+  font-size: 0.95rem;
+  color: #e5e7eb;
 }
 
-.btn.hand {
-  background: #f3f4ff;
-  color: #111827;
+/* カード共通 */
+.card {
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 18px 18px 20px;
+  margin-top: 16px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.section-title {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #e5e7eb;
+}
+
+.section-hint {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #9ca3af;
+}
+
+/* ボタンスタイル */
+.btn {
   border-radius: 999px;
-  border: 1px solid #c7d2fe;
+  border: none;
+  padding: 9px 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.15s ease;
+  font-weight: 500;
 }
 
-.btn.hand:hover {
-  background: #e0e7ff;
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-/* プレビュー */
-.preview-wrapper {
-  margin-top: 12px;
+.btn-outline {
+  background: transparent;
+  color: #e5e7eb;
+  border: 1px solid rgba(148, 163, 184, 0.8);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: rgba(148, 163, 184, 0.1);
+}
+
+/* じゃんけんボタン（グラデーション） */
+.btn-hand {
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  color: #f9fafb;
+  border: none;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.45);
+}
+
+.btn-hand:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(129, 140, 248, 0.6);
+}
+
+/* STEP1: アップロード周り */
+.upload-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+@media (max-width: 768px) {
+  .upload-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.upload-card {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 16px;
+  padding: 12px 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.upload-title {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: #e5e7eb;
 }
 
 .preview-frame {
+  margin-top: 10px;
   width: 100%;
-  max-width: 320px;
-  height: 220px;
+  height: 170px;
   border-radius: 12px;
-  border: 1px dashed #d1d5db;
-  background: #f9fafb;
+  border: 1px dashed rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.8);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   overflow: hidden;
-  position: relative;
 }
 
 .preview-frame.small {
-  max-width: 260px;
   height: 180px;
+  max-width: 280px;
+  margin: 6px auto 0;
 }
 
 .preview-frame img {
@@ -111,54 +160,76 @@ section + section {
 }
 
 .placeholder {
-  font-size: 0.85rem;
-  color: #9ca3af;
+  font-size: 0.8rem;
+  color: #6b7280;
   text-align: center;
-  padding: 0 8px;
+  padding: 0 6px;
 }
 
-/* 対戦エリア */
-.battle-area {
+.ready-indicator {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #e5e7eb;
+}
+
+/* STEP2: 選択 */
+.choices {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* バトルカード */
+.battle-card {
+  margin-bottom: 10px;
+}
+
+.battle-grid {
+  margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 16px;
+  gap: 12px;
 }
 
 @media (max-width: 768px) {
-  .battle-area {
+  .battle-grid {
     grid-template-columns: 1fr;
   }
 }
 
 .panel {
-  background: #f9fafb;
-  border-radius: 12px;
-  padding: 12px 14px 16px;
-  border: 1px solid #e5e7eb;
+  background: rgba(15, 23, 42, 0.95);
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  padding: 10px 12px 14px;
 }
 
-.panel h3 {
+.panel-title {
   margin: 0 0 4px;
+  font-size: 0.95rem;
+  color: #e5e7eb;
 }
 
 .hand-label {
-  font-size: 0.9rem;
-  color: #4b5563;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 0 0 4px;
 }
 
 .score {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-top: 6px;
   text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin-top: 4px;
 }
 
 .details-list {
   margin: 6px 0 0;
   padding-left: 18px;
-  font-size: 0.8rem;
-  color: #4b5563;
+  font-size: 0.75rem;
+  color: #9ca3af;
 }
 
 .details-list li + li {
@@ -167,36 +238,36 @@ section + section {
 
 /* 結果表示 */
 .result-area {
-  margin-top: 20px;
+  margin-top: 16px;
   text-align: center;
 }
 
 .base-result {
-  font-size: 1rem;
-  color: #4b5563;
+  font-size: 0.9rem;
+  color: #cbd5f5;
   margin: 4px 0;
 }
 
 .final-result {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
   margin: 4px 0;
 }
 
 .final-result.win {
-  color: #16a34a;
+  color: #4ade80;
 }
 
 .final-result.lose {
-  color: #dc2626;
+  color: #f97373;
 }
 
 .final-result.draw {
-  color: #2563eb;
+  color: #38bdf8;
 }
 
 .explain {
-  font-size: 0.85rem;
-  color: #6b7280;
-  margin-top: 6px;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: 4px;
 }

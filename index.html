@@ -2,74 +2,115 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>画質で逆転！？じゃんけんアプリ（試作）</title>
+  <title>画質バフじゃんけん</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>画質で逆転！？じゃんけんアプリ</h1>
-    <p class="lead">
-      自分のイラスト画像をアップロードして、PCがランダムに出すグーチョキパー画像と勝負します。<br>
-      画質が良ければ、じゃんけんで負けても逆転できるかも…？
-    </p>
+  <div class="bg-gradient"></div>
 
-    <!-- 画像アップロード -->
-    <section class="upload-area">
-      <h2>1. あなたのイラスト画像をアップロード</h2>
-      <button class="btn primary" id="upload-btn">画像を選択</button>
-      <input type="file" id="user-file" accept="image/*" hidden />
-      <p class="hint">※毎回出したい手のイラスト画像を1枚選んでください。</p>
-      <div class="preview-wrapper">
-        <div class="preview-frame">
-          <span id="user-placeholder" class="placeholder">
-            まだ画像が選択されていません。
-          </span>
-          <img id="user-preview" alt="あなたの画像プレビュー">
+  <main class="app">
+    <header class="app-header">
+      <h1>画質で逆転！？じゃんけんバトル</h1>
+      <p class="subtitle">
+        最初に自分のグー・チョキ・パー画像をセットして、<br />
+        画質バフ付きのじゃんけんでPCと勝負しよう！
+      </p>
+    </header>
+
+    <!-- STEP 1: 3枚セット -->
+    <section class="card">
+      <h2 class="section-title">1. 自分のグー・チョキ・パー画像をセット</h2>
+      <p class="section-hint">
+        それぞれのボタンから画像を1枚ずつ選んでください。<br />
+        3つ全てセットすると、じゃんけんができるようになります。
+      </p>
+
+      <div class="upload-grid">
+        <!-- グー -->
+        <div class="upload-card">
+          <h3 class="upload-title">✊ グー</h3>
+          <button class="btn btn-outline" id="btn-upload-gu">グー画像を選択</button>
+          <input type="file" id="file-gu" accept="image/*" hidden />
+          <div class="preview-frame">
+            <span class="placeholder" id="ph-gu">まだ画像が選択されていません</span>
+            <img id="preview-gu" alt="グー画像プレビュー" />
+          </div>
+        </div>
+
+        <!-- チョキ -->
+        <div class="upload-card">
+          <h3 class="upload-title">✌ チョキ</h3>
+          <button class="btn btn-outline" id="btn-upload-choki">チョキ画像を選択</button>
+          <input type="file" id="file-choki" accept="image/*" hidden />
+          <div class="preview-frame">
+            <span class="placeholder" id="ph-choki">まだ画像が選択されていません</span>
+            <img id="preview-choki" alt="チョキ画像プレビュー" />
+          </div>
+        </div>
+
+        <!-- パー -->
+        <div class="upload-card">
+          <h3 class="upload-title">🖐 パー</h3>
+          <button class="btn btn-outline" id="btn-upload-pa">パー画像を選択</button>
+          <input type="file" id="file-pa" accept="image/*" hidden />
+          <div class="preview-frame">
+            <span class="placeholder" id="ph-pa">まだ画像が選択されていません</span>
+            <img id="preview-pa" alt="パー画像プレビュー" />
+          </div>
         </div>
       </div>
+
+      <p class="ready-indicator" id="ready-indicator">準備中：3つの手の画像をすべてセットしてください</p>
     </section>
 
-    <!-- 手を選んで勝負 -->
-    <section class="play-area">
-      <h2>2. 出す手を選んで勝負！</h2>
+    <!-- STEP 2: じゃんけん -->
+    <section class="card">
+      <h2 class="section-title">2. 出す手を選んで勝負！</h2>
+      <p class="section-hint">
+        3つの画像をセットしたら、出したい手を選んでPCと対戦してみましょう。
+      </p>
       <div class="choices">
-        <button class="btn hand" data-hand="グー">✊ グー</button>
-        <button class="btn hand" data-hand="チョキ">✌ チョキ</button>
-        <button class="btn hand" data-hand="パー">🖐 パー</button>
+        <button class="btn btn-hand" data-hand="グー" disabled>✊ グー</button>
+        <button class="btn btn-hand" data-hand="チョキ" disabled>✌ チョキ</button>
+        <button class="btn btn-hand" data-hand="パー" disabled>🖐 パー</button>
       </div>
-      <p class="hint">※画像をアップしてからボタンを押してください。</p>
     </section>
 
-    <!-- 対戦結果表示 -->
-    <section class="battle-area">
-      <div class="panel">
-        <h3>あなた</h3>
-        <p class="hand-label" id="user-hand-label">手：--</p>
-        <div class="preview-frame small">
-          <img id="user-battle-preview" alt="対戦用あなた画像">
+    <!-- バトル表示 -->
+    <section class="card battle-card">
+      <h2 class="section-title">3. バトル結果</h2>
+      <div class="battle-grid">
+        <!-- あなた -->
+        <div class="panel">
+          <h3 class="panel-title">あなた</h3>
+          <p class="hand-label" id="user-hand-label">手：--</p>
+          <div class="preview-frame small">
+            <img id="user-battle-preview" alt="あなたの対戦画像" />
+          </div>
+          <p class="score" id="user-score">スコア：--</p>
+          <ul class="details-list" id="user-details"></ul>
         </div>
-        <p class="score" id="user-score">スコア：--</p>
-        <ul class="details-list" id="user-details"></ul>
-      </div>
 
-      <div class="panel">
-        <h3>PC</h3>
-        <p class="hand-label" id="npc-hand-label">手：--</p>
-        <div class="preview-frame small">
-          <img id="npc-preview" alt="PC画像">
+        <!-- PC -->
+        <div class="panel">
+          <h3 class="panel-title">PC</h3>
+          <p class="hand-label" id="npc-hand-label">手：--</p>
+          <div class="preview-frame small">
+            <img id="npc-preview" alt="PCの対戦画像" />
+          </div>
+          <p class="score" id="npc-score">スコア：--</p>
+          <ul class="details-list" id="npc-details"></ul>
         </div>
-        <p class="score" id="npc-score">スコア：--</p>
-        <ul class="details-list" id="npc-details"></ul>
+      </div>
+
+      <div class="result-area">
+        <p class="base-result" id="base-result">じゃんけん結果：--</p>
+        <p class="final-result" id="final-result">最終結果：--</p>
+        <p class="explain" id="explain-text"></p>
       </div>
     </section>
-
-    <section class="result-area">
-      <p class="base-result" id="base-result">じゃんけん結果：--</p>
-      <p class="final-result" id="final-result">最終結果：--</p>
-      <p class="explain" id="explain-text"></p>
-    </section>
-  </div>
+  </main>
 
   <script src="script.js" defer></script>
 </body>
